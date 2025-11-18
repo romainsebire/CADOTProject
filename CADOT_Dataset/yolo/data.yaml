@@ -1,0 +1,21 @@
+path: /Users/remyplastre/Downloads/CADOT_Dataset/yolo
+train: images/train
+val: images/valid
+test: images/test
+nc: 15
+names:
+- small-object
+- basketball field
+- building
+- crosswalk
+- football field
+- graveyard
+- large vehicle
+- medium vehicle
+- playground
+- roundabout
+- ship
+- small vehicle
+- swimming pool
+- tennis court
+- train
