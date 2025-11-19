@@ -1,20 +1,20 @@
 """
-Script de fine-tuning YOLOv8 sur le dataset CADOT
+Script de fine-tuning YOLOv11 sur le dataset CADOT
 """
 from ultralytics import YOLO
 from pathlib import Path
 
 # Configuration
 DATA_YAML = Path("CADOT_Dataset/yolo/data.yaml")
-MODEL_NAME = "yolov8n.pt"  # Modèle nano (rapide). Alternatives: yolov8s.pt, yolov8m.pt, yolov8l.pt, yolov8x.pt
+MODEL_NAME = "yolo11l.pt"  # Modèle large YOLOv11. Alternatives: yolo11n.pt, yolo11s.pt, yolo11m.pt, yolo11x.pt
 EPOCHS = 100
 IMG_SIZE = 640
 BATCH_SIZE = 16  # Ajustez selon votre GPU/RAM
 PROJECT = "runs/detect"
-NAME = "cadot_yolov8"
+NAME = "cadot_yolo11l"
 
 def main():
-    """Entraîne YOLOv8 sur le dataset CADOT"""
+    """Entraîne YOLOv11 sur le dataset CADOT"""
     
     # Vérifier que le fichier data.yaml existe
     if not DATA_YAML.exists():
