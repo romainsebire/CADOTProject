@@ -1,0 +1,23 @@
+path: /home/docker/CADOT_Project/CADOT_YOLO
+
+train: train/images
+val: val/images
+
+# Classes
+nc: 15
+names:
+  0: small-object
+  1: basketball field
+  2: building
+  3: crosswalk
+  4: football field
+  5: graveyard
+  6: large vehicle
+  7: medium vehicle
+  8: playground
+  9: roundabout
+  10: ship
+  11: small vehicle
+  12: swimming pool
+  13: tennis court
+  14: train
