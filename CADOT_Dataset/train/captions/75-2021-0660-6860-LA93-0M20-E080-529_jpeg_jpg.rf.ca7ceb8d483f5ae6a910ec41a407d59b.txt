@@ -1,0 +1,1 @@
+top-down aerial RGB image of an urban area with 19 buildings, 39 small vehicles, 4 medium vehicles, 2 crosswalks
