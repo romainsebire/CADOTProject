@@ -225,3 +225,6 @@ nohup.out
 # Stable Diffusion / LoRA models
 *.safetensors
 topdown*.safetensors
+
+# Downloaded SDXL models (very large ~13GB)
+models/
