@@ -221,3 +221,7 @@ nohup.out
 # Ultralytics cache
 .cache/
 *.cache
+
+# Stable Diffusion / LoRA models
+*.safetensors
+topdown*.safetensors
