@@ -8,7 +8,7 @@ from tqdm import tqdm
 IMG_DIR = Path("CADOT_YOLO/train/images")
 LBL_DIR = Path("CADOT_YOLO/train/labels")
 
-# Les IDs de tes classes rares (selon tes résultats précédents)
+# Les IDs des classes rares
 # 1:Basket, 4:Foot, 5:Cimetière, 9:Rond-point, 13:Tennis, 14:Train
 RARE_CLASSES = [1, 4, 5, 8, 9, 13, 14] 
 
@@ -18,8 +18,8 @@ AUGMENT_FACTOR = 5
 # Définition du pipeline Albumentations (Spécial Aérien)
 transform = A.Compose([
     A.RandomRotate90(p=1.0),            # Rotation 90/180/270
-    A.HorizontalFlip(p=0.5),            # Miroir H
-    A.VerticalFlip(p=0.5),              # Miroir V
+    A.HorizontalFlip(p=0.5),            # Miroir Horizontal
+    A.VerticalFlip(p=0.5),              # Miroir Vertical
     A.RandomBrightnessContrast(p=0.5),  # Changement lumière
     A.GaussianBlur(p=0.3),              # Léger flou (simule mauvaise mise au point)
     A.CLAHE(p=0.3),                     # Contraste adaptatif (bon pour le relief)
@@ -53,16 +53,15 @@ def augment_data():
             if cls_id in RARE_CLASSES:
                 has_rare = True
         
-        # Si pas de classe rare, on passe
         if not has_rare:
             continue
             
         # 2. Charger l'image correspondante
-        img_name = lbl_path.stem + ".jpg" # On suppose .jpg
+        img_name = lbl_path.stem + ".jpg"
         img_path = IMG_DIR / img_name
         
         if not img_path.exists():
-            continue # Peut-être .jpeg ou autre, on saute pour simplifier
+            continue
             
         image = cv2.imread(str(img_path))
         if image is None: continue

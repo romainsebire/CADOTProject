@@ -1,22 +1,3 @@
-#from ultralytics import YOLO
-
-# Chargement du modèle
-#model = YOLO('yolov8m.pt') 
-
-# Lancement de l'entrainement
-#if __name__ == '__main__':
-#    model.train(
-#        data='cadot.yaml',
-#        epochs=100,
-#        imgsz=512,
-#        batch=12,
-#        device=0,
-#        project='runs',
-#        name='finetune_medium_v1',
-#        patience=25,
-#        verbose=True
-#    )
-
 from ultralytics import YOLO
 
 # Chargement du modèle v11 Medium
@@ -29,12 +10,12 @@ if __name__ == '__main__':
         data='cadot.yaml',
         device=0,
         project='runs', 
-        name='finetune_v11m_300e_albumentations',
+        name='finetune_v11m', # Nom du fichier de sortie dans /runs/..
         
         # Hyperparamètres du Concours
         epochs=300,          # Durée demandée
         batch=16,            # Taille demandée
-        imgsz=512,           # Taille de tes images
+        imgsz=512,           # Taille de tes images (500 x 500)
         
         optimizer='SGD',     # Optimiseur imposé (Stochastic Gradient Descent)
         lr0=0.01,            # Learning Rate initial
@@ -49,10 +30,6 @@ if __name__ == '__main__':
         copy_paste=0.1,   # Copy-Paste (utile pour densifier les objets)
         
         # Paramètres de gestion
-        patience=20,          # IMPORTANT : On désactive l'arrêt anticipé pour forcer les 300 époques
+        patience=20,         # Arret anticipé en cas de non progression
         verbose=True,        # Afficher les logs
-        
-        # Optionnel : Cosine LR scheduler est souvent utilisé par défaut avec ces réglages,
-        # on le laisse actif (cos_lr=False par défaut, mais souvent True dans les papiers, 
-        # tu peux laisser par défaut car le papier ne le précise pas explicitement).
     )
