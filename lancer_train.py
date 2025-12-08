@@ -1,35 +1,34 @@
 from ultralytics import YOLO
 
-# Chargement du modèle v11 Medium
+# Load v11 Medium model
 model = YOLO('yolo11m.pt') 
 
 if __name__ == '__main__':
-    print(">>> Lancement du Benchmark YOLOv11 (Settings Concours)...")
     
     model.train(
         data='cadot.yaml',
         device=0,
         project='runs', 
-        name='finetune_v11m', # Nom du fichier de sortie dans /runs/..
+        name='finetune_v11m', # Output folder name in /runs/..
         
-        # Hyperparamètres du Concours
-        epochs=300,          # Durée demandée
-        batch=16,            # Taille demandée
-        imgsz=512,           # Taille de tes images (500 x 500)
+        # Competition Hyperparameters
+        epochs=300,          # Required epochs
+        batch=16,            # Required batch size
+        imgsz=512,           # Image size (500 x 500)
         
-        optimizer='SGD',     # Optimiseur imposé (Stochastic Gradient Descent)
-        lr0=0.01,            # Learning Rate initial
+        optimizer='SGD',     # Mandated optimizer (Stochastic Gradient Descent)
+        lr0=0.01,            # Initial Learning Rate
         momentum=0.937,      # Momentum
-        weight_decay=0.0005, # Pour éviter l'overfitting
+        weight_decay=0.0005, # To prevent overfitting
 
-        # Augmentations de données
-        degrees=90,      # Rotation +/- 90 degrés
-        flipud=0.5,      # Miroir vertical (50% de chance)
+        # Data Augmentations
+        degrees=90,      # Rotation +/- 90 degrees
+        flipud=0.5,      # Vertical flip (50% probability)
         scale=0.5,       # Zoom in/out (+/- 50%)
-        mosaic=1.0,      # Mosaïque
-        copy_paste=0.1,   # Copy-Paste (utile pour densifier les objets)
+        mosaic=1.0,      # Mosaic
+        copy_paste=0.1,  # Copy-Paste (useful to densify objects)
         
-        # Paramètres de gestion
-        patience=20,         # Arret anticipé en cas de non progression
-        verbose=True,        # Afficher les logs
+        # Management settings
+        patience=20,         # Early stopping if no progress
+        verbose=True,        # Display logs
     )

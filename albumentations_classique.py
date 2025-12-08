@@ -8,33 +8,28 @@ from tqdm import tqdm
 IMG_DIR = Path("CADOT_YOLO/train/images")
 LBL_DIR = Path("CADOT_YOLO/train/labels")
 
-# Les IDs des classes rares
-# 1:Basket, 4:Foot, 5:Cimetière, 9:Rond-point, 13:Tennis, 14:Train
+# IDs of rare classes
+# 1:Basket, 4:Foot, 5:Graveyard, 9:Roundabout, 13:Tennis, 14:Train
 RARE_CLASSES = [1, 4, 5, 8, 9, 13, 14] 
 
-# Combien de nouvelles versions créer par image originale ?
+# Augmentation factor
 AUGMENT_FACTOR = 5 
 
-# Définition du pipeline Albumentations (Spécial Aérien)
+# Albumentations Pipeline (Aerial specific)
 transform = A.Compose([
     A.RandomRotate90(p=1.0),            # Rotation 90/180/270
-    A.HorizontalFlip(p=0.5),            # Miroir Horizontal
-    A.VerticalFlip(p=0.5),              # Miroir Vertical
-    A.RandomBrightnessContrast(p=0.5),  # Changement lumière
-    A.GaussianBlur(p=0.3),              # Léger flou (simule mauvaise mise au point)
-    A.CLAHE(p=0.3),                     # Contraste adaptatif (bon pour le relief)
+    A.HorizontalFlip(p=0.5),            # Horizontal Mirror
+    A.VerticalFlip(p=0.5),              # Vertical Mirror
+    A.RandomBrightnessContrast(p=0.5),  # Lighting changes
+    A.GaussianBlur(p=0.3),              # Slight blur
+    A.CLAHE(p=0.3),                     # Adaptive contrast
 ], bbox_params=A.BboxParams(format='yolo', label_fields=['class_labels']))
 
 def augment_data():
-    print(f">>> Recherche des classes rares : {RARE_CLASSES}...")
-    
-    # On liste tous les fichiers labels
     label_files = list(LBL_DIR.glob("*.txt"))
-    
     count_new = 0
     
     for lbl_path in tqdm(label_files):
-        # 1. Lire le label pour voir s'il contient une classe rare
         with open(lbl_path, 'r') as f:
             lines = f.readlines()
         
@@ -55,8 +50,8 @@ def augment_data():
         
         if not has_rare:
             continue
-            
-        # 2. Charger l'image correspondante
+        
+        # Load Image
         img_name = lbl_path.stem + ".jpg"
         img_path = IMG_DIR / img_name
         
@@ -67,38 +62,34 @@ def augment_data():
         if image is None: continue
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-        # 3. Générer les variations
+        # Generate Variations
         for i in range(AUGMENT_FACTOR):
             try:
                 augmented = transform(image=image, bboxes=bboxes, class_labels=class_labels)
                 
-                # Sauvegarde Image
+                # Save Image
                 new_filename = f"{lbl_path.stem}_aug_{i}"
                 save_img_path = IMG_DIR / (new_filename + ".jpg")
                 
-                # Convertir RGB -> BGR pour OpenCV
                 img_to_save = cv2.cvtColor(augmented['image'], cv2.COLOR_RGB2BGR)
                 cv2.imwrite(str(save_img_path), img_to_save)
                 
-                # Sauvegarde Label
+                # Save Label
                 save_lbl_path = LBL_DIR / (new_filename + ".txt")
                 with open(save_lbl_path, 'w') as f_out:
                     for cls, bbox in zip(augmented['class_labels'], augmented['bboxes']):
-                        # bbox est déjà au format yolo (norm) grâce à BboxParams
-                        # On clip pour éviter les erreurs 1.00001
                         xc, yc, w, h = bbox
                         xc = min(max(xc, 0), 1)
                         yc = min(max(yc, 0), 1)
                         w = min(max(w, 0), 1)
                         h = min(max(h, 0), 1)
-                        f_out.write(f"{cls} {xc:.6f} {yc:.6f} {w:.6f} {h:.6f}\n")
+                        f_out.write(f"{int(cls)} {xc:.6f} {yc:.6f} {w:.6f} {h:.6f}\n")
                 
                 count_new += 1
             except Exception as e:
-                # Parfois albumentations râle si la bbox sort de l'image
                 pass
 
-    print(f"\n✅ Terminé ! {count_new} nouvelles images générées pour les classes rares.")
+    print(f"\n Finished! {count_new} new images generated for rare classes.")
 
 if __name__ == "__main__":
     augment_data()
