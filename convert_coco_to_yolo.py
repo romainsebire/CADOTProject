@@ -4,7 +4,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 # --- CONFIGURATION ---
-SOURCE_DIR = Path("Dataset_COCO")
+SOURCE_DIR = Path("CADOT_Dataset")
 OUTPUT_DIR = Path("Dataset_YOLO")
 
 FOLDERS_MAP = {

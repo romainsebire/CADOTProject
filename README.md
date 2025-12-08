@@ -1,18 +1,52 @@
 # CADOT YOLO Project - Object Detection on Aerial Imagery
 
+Yahya AKAABOUNE
+Najoua LABRIKI
+Rémy PLASTRE
+Pauline ROUGEOT
+Romain SEBIRE
+
 This repository contains the complete workflow for training a YOLOv11 model to detect objects in aerial images (CADOT dataset). It includes pipelines for **Data Preprocessing**, **Generative AI Inpainting**, **Advanced Data Augmentation** (Albumentations), and **Training**.
 
----
+## 0. Setup & Important Notes
 
-**Before running any augmentation or inpainting script:**
+### Useful Links
+* **Competition Page:** https://cadot.onrender.com/
+* **Dataset Download:** https://www-l2ti.univ-paris13.fr/iriser/dashboard/pages/download_CADOT_Dataset.php
 
-The scripts below could modify the dataset or generate files that mimic the original structure. To prevent "pollution" of your clean dataset:
+### Installation
+To run the scripts and training, you must install the Ultralytics library:
+```bash
+pip install ultralytics
+```
+## Data Conversion (COCO -> YOLO)
 
-1.  **Duplicate** your original training folder.
-2.  Keep a safe copy of `Dataset_YOLO/train_original`.
-3.  Perform augmentations on a working copy (e.g., `Dataset_YOLO/train`), never on the backup.
+The raw dataset downloaded from the link above is in **COCO format** (JSON annotations). YOLOv11 requires a specific directory structure with normalized `.txt` labels.
 
----
+We have provided a script to automate this conversion.
+
+**1. Place the data:**
+Extract the downloaded zip. Ensure the source folder is named `CADOT_Dataset`.
+
+**2. Run the conversion script:**
+```bash
+python convert_coco_to_yolo.py
+```
+
+**Output:**
+The script automatically generates a new folder named **`Dataset_YOLO`**. This folder contains the formatted `train` and `val` directories with images and labels.
+
+** Use this generated folder for all subsequent steps.**
+
+
+###  Note regarding Model Weights (File Size)
+To reduce the file size of this submission/archive, we have removed the fine-tuned weight files (`.pt`) from most folders in the `runs/` directory.
+
+**EXCEPTION:** We kept the weights for our **best performing model**. You can find it here:
+> `CADOTProject\runs\finetune_v11m_albumentations_multipipelines`
+
+Please use the weights inside this specific folder for testing and inference.
+
 
 ## 1. Synthetic Data Generation (Inpainting)
 
