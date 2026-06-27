@@ -8,7 +8,7 @@ from tqdm import tqdm
 # --- CONFIGURATION ---
 IMG_DIR = Path("CADOT_YOLO/train/images")
 LBL_DIR = Path("CADOT_YOLO/train/labels")
-OUTPUT_DIR = Path("INPAINTING_STAGING")
+OUTPUT_DIR = Path("1_inpainting_preparation")
 
 # Parameters
 CLASS_ID = 1      # Basketball ID
@@ -119,7 +119,7 @@ def prepare_masks():
             
         success_count += 1
 
-    print(f"\n Ready! {success_count} generation kits in INPAINTING_STAGING/")
+    print(f"\n Ready! {success_count} generation kits in 1_inpainting_preparation/")
     print("Use the images in 'images/' and the masks in 'masks/' with your inpainting tool.")
 
 if __name__ == "__main__":

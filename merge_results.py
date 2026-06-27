@@ -4,7 +4,7 @@ from pathlib import Path
 
 # --- CONFIGURATION ---
 GENERATED_DIR = Path("GENERATED_RESULTS") # Where you put your finished images
-COORD_DIR = Path("INPAINTING_STAGING/coords") # Where script prepare_inpainting put the info
+COORD_DIR = Path("1_inpainting_preparation/coords") # Where script prepare_inpainting put the info
 
 FINAL_IMG_DIR = Path("CADOT_YOLO/data_augmentation/images")
 FINAL_LBL_DIR = Path("CADOT_YOLO/data_augmentation/labels")

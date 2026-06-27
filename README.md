@@ -6,6 +6,8 @@
 **Team members:** Romain Sebire · Pauline Rougeot · Rémy Plastre  
 **Course:** Computer Vision — M2 2024/2025
 
+**Project Presentation:** For a comprehensive and detailed overview of our methodologies, experiments, and final results, please check out our project presentation: [academic_project_presentation.pdf](academic_project_presentation.pdf).
+
 ---
 
 ## Project Overview
@@ -108,11 +110,35 @@ This pipeline generates synthetic basketball courts in empty image regions using
 
 > **Why only basketball fields?** Our training infrastructure (Docker with NVIDIA T4) could only run Stable Diffusion 1.5 locally, which produced low-quality aerial imagery. Google Gemini's Imagen 3 delivered far superior results, but the semi-automated workflow (prepare masks locally → generate via Gemini → download → resize → verify) limited us to a single class demonstration.
 
+### Pipeline: Description & Workflow
+
+To make it easier to understand and follow the generative inpainting pipeline, the project directories have been structured as follows:
+* **`1_inpainting_preparation/`** (formerly `INPAINTING_STAGING`): Contains the images and masks prepared before generating synthetic data. Background images are selected specifically for having few objects, leaving enough clear space to insert a basketball court. The binary mask (black and white image) indicates the precise empty area where the diffusion model should generate the object.
+* **`2_inpainting_augmented_results/`** (formerly `augmented_images`): Contains the augmented images with generated basketball courts. A single original image can be augmented multiple times with different types and colors of courts. This directory also contains the merged labels (combining the original labels of the background image with the label of the new generated basketball court) and a `visual_debug/` folder to visually verify that the model generated the court at the correct location and that the bounding box annotation is correct.
+
+#### Pipeline Step-by-Step Illustration
+
+The table below shows the complete cycle for a sample image (`basket_gen_1_...`):
+
+| Step 1: Selected Original Image | Step 2: Generation Mask Location |
+| :---: | :---: |
+| ![Step 1: Original Image](1_inpainting_preparation/images/basket_gen_5_75-2021-0660-6865-LA93-0M20-E080-1039_jpeg_jpg.rf.45af923ee76ab080a306f359a2fc5992.jpg) | ![Step 2: Mask](1_inpainting_preparation/masks/basket_gen_5_75-2021-0660-6865-LA93-0M20-E080-1039_jpeg_jpg.rf.45af923ee76ab080a306f359a2fc5992.png) |
+| *Original image with low density selected to provide clear space.* | *White-on-black binary mask defining the empty spot for the generation.* |
+
+| Step 3: Augmentation via Diffusion Model | Step 4: Final Labeling & Visual Debug |
+| :---: | :---: |
+| ![Step 3: Augmented Image](2_inpainting_augmented_results/images/basket_gen_006_75-2021-0660-6865-LA93-0M20-E080-1039_jpeg_jpg.rf.45af923ee76ab080a306f359a2fc5992.jpg) | ![Step 4: Visual Debug](2_inpainting_augmented_results/visual_debug/basket_gen_006_75-2021-0660-6865-LA93-0M20-E080-1039_jpeg_jpg.rf.45af923ee76ab080a306f359a2fc5992.jpg) |
+| *Inpainting by the generative model (the basketball court is realistically integrated).* | *Visual verification: old objects AND the new court (green box) are correctly labeled.* |
+
+---
+
+### Reproducing the Results
+
 ```bash
 # 1. Prepare masks and coordinates for empty regions
 python prepare_inpainting.py
 
-# 2. Upload INPAINTING_STAGING/images/ and masks/ to your generation service
+# 2. Upload 1_inpainting_preparation/images/ and masks/ to your generation service
 #    Prompt: "Satellite view of a basketball court, distinct white lines,
 #    asphalt surface, top-down orthographic view, high resolution"
 
@@ -120,7 +146,7 @@ python prepare_inpainting.py
 #    Ensure filenames match the originals from step 1
 
 # 4. Resize generated images to 500x500
-python resize_image.py
+python resize_images.py
 
 # 5. Merge into dataset with automatic labeling
 python merge_results.py
@@ -164,12 +190,13 @@ CADOTProject/
 ├── augmentation_classic.py         # Uniform augmentation for rare classes
 ├── augmentation_multi_pipeline.py  # Class-specific augmentation pipelines
 ├── prepare_inpainting.py           # Mask generation for synthetic data
-├── resize_image.py                 # Resize generated images to 500x500
+├── resize_images.py                # Resize generated images to 500x500
 ├── merge_results.py                # Merge synthetic images into dataset
 ├── visualize_bbox.py               # Visual debug of bounding boxes
 ├── count_objects.py                # Dataset class distribution analysis
 ├── cadot.yaml                      # YOLO dataset configuration
 ├── requirements.txt                # Python dependencies
+├── academic_project_presentation.pdf # Project academic presentation (PDF)
 ├── docs/
 │   ├── cadot_challenge_baseline_performance.png
 │   └── references/                 # YOLO research papers
@@ -186,7 +213,8 @@ CADOTProject/
 │   ├── finetune_v11m_albumentations_classique/
 │   ├── finetune_v11m_albumentations_multipipelines/  ← Best model (weights included)
 │   └── finetune_v11m_iagenbasketball/
-└── INPAINTING_STAGING/             # Generated masks and coordinates (15 examples)
+├── 1_inpainting_preparation/       # Generated masks and coordinates (15 examples)
+└── 2_inpainting_augmented_results/ # Inpainted images, labels and visual debug (15 examples)
 ```
 
 > **Note:** The full dataset is not included in this repository. Download it from the [CADOT Challenge page](https://www-l2ti.univ-paris13.fr/iriser/dashboard/pages/download_CADOT_Dataset.php). The `samples/` folder contains 10 representative images per split for reference.
