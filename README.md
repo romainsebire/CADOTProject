@@ -1,12 +1,12 @@
 # CADOT YOLO Project - Object Detection on Aerial Imagery
 
-Yahya AKAABOUNE
-Najoua LABRIKI
 Rémy PLASTRE
 Pauline ROUGEOT
 Romain SEBIRE
 
 This repository contains the complete workflow for training a YOLOv11 model to detect objects in aerial images (CADOT dataset). It includes pipelines for **Data Preprocessing**, **Generative AI Inpainting**, **Advanced Data Augmentation** (Albumentations), and **Training**.
+
+🎓 **Project Presentation:** For a comprehensive and detailed overview of our methodologies, experiments, and final results, please check out our project presentation: [academic_project_presentation.pdf](academic_project_presentation.pdf).
 
 ## 0. Setup & Important Notes
 
@@ -19,6 +19,7 @@ To run the scripts and training, you must install the Ultralytics library:
 ```bash
 pip install ultralytics
 ```
+
 ## Data Conversion (COCO -> YOLO)
 
 The raw dataset downloaded from the link above is in **COCO format** (JSON annotations). YOLOv11 requires a specific directory structure with normalized `.txt` labels.
@@ -36,14 +37,14 @@ python convert_coco_to_yolo.py
 **Output:**
 The script automatically generates a new folder named **`Dataset_YOLO`**. This folder contains the formatted `train` and `val` directories with images and labels.
 
-** Use this generated folder for all subsequent steps.**
+**⚠️ Use this generated folder for all subsequent steps.**
 
 
-###  Note regarding Model Weights (File Size)
+### Note regarding Model Weights (File Size)
 To reduce the file size of this submission/archive, we have removed the fine-tuned weight files (`.pt`) from most folders in the `runs/` directory.
 
 **EXCEPTION:** We kept the weights for our **best performing model**. You can find it here:
-> `CADOTProject\runs\finetune_v11m_albumentations_multipipelines`
+> `runs/finetune_v11m_albumentations_multipipelines`
 
 Please use the weights inside this specific folder for testing and inference.
 
@@ -52,12 +53,36 @@ Please use the weights inside this specific folder for testing and inference.
 
 We use **Google Nano Banana** to generate rare objects (e.g., Basketball courts) in empty areas of existing images.
 
+### Pipeline: Description & Workflow
+
+To make it easier to understand and follow the generative inpainting pipeline, the project directories have been structured as follows:
+* **`1_inpainting_preparation/`** (formerly `inpainting_staging`): Contains the images and masks prepared before generating synthetic data. Background images are selected specifically for having few objects, leaving enough clear space to insert a basketball court. The binary mask (black and white image) indicates the precise empty area where the diffusion model should generate the object.
+* **`2_inpainting_augmented_results/`** (formerly `augmented_images`): Contains the augmented images with generated basketball courts. A single original image can be augmented multiple times with different types and colors of courts. This directory also contains the merged labels (combining the original labels of the background image with the label of the new generated basketball court) and a `visual_debug/` folder to visually verify that the model generated the court at the correct location and that the bounding box annotation is correct.
+
+#### Pipeline Step-by-Step Illustration
+
+The table below shows the complete cycle for a sample image (`basket_gen_1_...`):
+
+| Step 1: Selected Original Image | Step 2: Generation Mask Location |
+| :---: | :---: |
+| ![Step 1: Original Image](1_inpainting_preparation/images/basket_gen_1_75-2021-0640-6860-LA93-0M20-E080-1417_jpeg_jpg.rf.76e7a4b6f4a9bb4df400b151847a4c50.jpg) | ![Step 2: Mask](1_inpainting_preparation/masks/basket_gen_1_75-2021-0640-6860-LA93-0M20-E080-1417_jpeg_jpg.rf.76e7a4b6f4a9bb4df400b151847a4c50.png) |
+| *Original image with low density selected to provide clear space.* | *White-on-black binary mask defining the empty spot for the generation.* |
+
+| Step 3: Augmentation via Diffusion Model | Step 4: Final Labeling & Visual Debug |
+| :---: | :---: |
+| ![Step 3: Augmented Image](2_inpainting_augmented_results/images/basket_gen_1_75-2021-0640-6860-LA93-0M20-E080-1417_jpeg_jpg.rf.76e7a4b6f4a9bb4df400b151847a4c50.jpg) | ![Step 4: Visual Debug](2_inpainting_augmented_results/visual_debug/basket_gen_1_75-2021-0640-6860-LA93-0M20-E080-1417_jpeg_jpg.rf.76e7a4b6f4a9bb4df400b151847a4c50.jpg) |
+| *Inpainting by the generative model (the basketball court is realistically integrated).* | *Visual verification: old objects AND the new court (green box) are correctly labeled.* |
+
+---
+
+### Reproducing the Results
+
 ### Step 1: Preparation
 Run the script to identify empty spots and generate masks.
 ```bash
 python prepare_inpainting.py
 ```
-* **Output:** Creates a folder `INPAINTING_STAGING/` containing:
+* **Output:** Creates a folder `1_inpainting_preparation/` containing:
     * `images/`: Original crop context.
     * `masks/`: Black and white binary masks.
     * `coords/`: YOLO coordinates for the future object.
@@ -79,7 +104,7 @@ Upload the content of `images/` and `masks/` to a Generative AI service (e.g., N
 
 The generator might output 1024x1024 images. Resize them back to 500x500 to match the mask coordinates.
 ```bash
-python resize_generated.py
+python resize_images.py
 ```
 
 ### Step 5: Merge & Labeling
@@ -98,7 +123,7 @@ python merge_results.py
 python visualize_bbox.py
 ```
 
-* Check the output in `Dataset_YOLO/data_augmentation/visual_debug`.
+* Check the output in `Dataset_YOLO/data_augmentation/visual_debug` (or `2_inpainting_augmented_results/visual_debug` for our pre-generated results).
 
 ### Step 7: Final Integration
 If visualizations are correct, **manually move** the verified images and labels from `Dataset_YOLO/data_augmentation/` to your main training folder:
@@ -115,20 +140,20 @@ We use **Albumentations** to multiply the dataset. Choose **ONE** of the followi
 ### Option A: Simple Augmentation (General)
 Applies the same transformations (Flip, Blur, Brightness) to all rare classes.
 
-* **Config:** Edit `albumentation_classique.py` to change `AUGMENT_FACTOR` (e.g., 5).
+* **Config:** Edit `albumentations_classic.py` to change `AUGMENT_FACTOR` (e.g., 5).
 * **Run:**
 ```bash
-python albumentation_classique.py
+python albumentations_classic.py
 ```
 
 ### Option B: Multi Pipelines Augmentation
 Applies specific physics-based transformations depending on the object type (e.g., "Sport" pipeline preserves lines, "Shape" pipeline distorts roundabouts).
 
-* **Config:** Edit `albumentation_pipelines.py`.
+* **Config:** Edit `albumentations_pipelines.py`.
     * Adjust `augment_counts` dictionary to set target quantities per class.
 * **Run:**
 ```bash
-python albumentation_pipelines.py
+python albumentations_pipelines.py
 ```
 
 ---
@@ -142,7 +167,7 @@ Ensure your `data.yaml` points to the correct train/val paths.
 
 ### Launch Command
 ```bash
-python lancer_train.py
+python run_train.py
 ```
 ### Key Parameters:
 * `model`: `yolo11n.pt` (Nano) or `yolo11m.pt` (Medium).
